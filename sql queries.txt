@@ -1,0 +1,47 @@
+CREATE VIEW viewBought
+AS
+SELECT Download.DateOfDownload, Rental.DateOfReturn, COUNT(*) AS c1
+FROM Download
+INNER JOIN Rental on Download.DownloadID = Rental.DownloadID
+INNER JOIN Movie on Download.MovieID = Movie.MovieID
+WHERE CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) < 0;
+
+CREATE VIEW viewRented
+AS
+SELECT Download.DateOfDownload, Rental.DateOfReturn, COUNT(*) AS c2
+FROM Download
+INNER JOIN Rental on Download.DownloadID = Rental.DownloadID
+INNER JOIN Movie on Download.MovieID = Movie.MovieID
+WHERE CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) > 0;
+
+SELECT
+viewBought.c1 AS total_bought, viewRented.c2 AS total_rented,
+viewBought.c1 + viewRented.c2 AS total,
+CAST(((1.0 * viewBought.c1)/((1.0 * viewBought.c1) + (1.0 * viewRented.c2))) * 100 AS DECIMAL (5,2)) AS percent_bought,
+CAST(((1.0 * viewRented.c2)/((1.0 * viewBought.c1) + (1.0 * viewRented.c2))) * 100 AS DECIMAL (5,2)) AS percent_rented
+FROM viewBought, viewRented
+
+
+
+
+SELECT Download.CustomerID,
+Download.DownloadID,
+Movie.Age,
+CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration AS OverdueLength,
+Movie.Price,
+CASE
+    WHEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) <= 0
+        THEN '0'
+    WHEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) <= 7
+        THEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) * (CAST((Movie.Price * Overdue.OverdueLessWeek) AS DECIMAL(5, 2)))
+    WHEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) >= 7
+        THEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) * (CAST((Movie.Price * Overdue.OverdueGreaterWeek) AS DECIMAL(5, 2)))
+    ELSE 'error'
+END AS "OverdueFees"
+FROM Download
+INNER JOIN Rental on Download.DownloadID = Rental.DownloadID
+INNER JOIN Movie on Download.MovieID = Movie.MovieID
+INNER JOIN Overdue on Movie.Age = Overdue.Age
+WHERE CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) > 0
+
+ALL DOWNLOADS (NOT RENTED) have their date of return BEFORE the date of download, and so the last WHERE statement filters them out, leaving only rentals
