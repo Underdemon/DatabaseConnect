@@ -1,0 +1,6 @@
+CREATE TABLE MovieFormat
+(
+FormatID INTEGER NOT NULL PRIMARY KEY,
+Format VARCHAR(255),
+FileType VARCHAR(255)
+);

@@ -1,0 +1,7 @@
+CREATE TABLE Overdue
+(
+Age VARCHAR(255) NOT NULL PRIMARY KEY,
+Duration VARCHAR(255),
+OverdueLessWeek DECIMAL(5,2),
+OverdueGreaterWeek DECIMAL(5,2)
+);

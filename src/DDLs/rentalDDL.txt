@@ -1,0 +1,7 @@
+CREATE TABLE Rental
+(
+RentalID Integer NOT NULL PRIMARY KEY,
+DateOfReturn DATE,
+DownloadID INTEGER NOT NULL,
+FOREIGN KEY (DownloadID) REFERENCES Download(DownloadID)
+);

@@ -1,0 +1,9 @@
+CREATE TABLE Customer
+(
+CustomerID INTEGER NOT NULL PRIMARY KEY,
+CustomerName VARCHAR(255),
+AddressID INTEGER,
+PhoneNumber VARCHAR(255),
+DateOfBirth DATE,
+FOREIGN KEY (AddressID) REFERENCES Address(AddressID)
+);
