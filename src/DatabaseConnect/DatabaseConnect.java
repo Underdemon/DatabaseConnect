@@ -10,11 +10,14 @@ package DatabaseConnect;
  * @author water
  */
 //import java.sql.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -22,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import static javax.management.Query.value;
 
 
 /**
@@ -97,7 +101,7 @@ public class DatabaseConnect
             lines.close();
             
             String sql = data;
-            stmt.executeUpdate(sql);            
+            stmt.executeUpdate(sql);         
             stmt.close();           
             conn.commit();
         }
@@ -109,7 +113,7 @@ public class DatabaseConnect
         return stmt != null;
     }
 
-    public boolean insert()
+    public boolean insert(String details, String CSVpath)
     {
         boolean bInsert = false;
         Statement stmt = null;
@@ -117,20 +121,17 @@ public class DatabaseConnect
         try
         {
             stmt = conn.createStatement();
-            String sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (1, 'Paul', 32, 'California', 20000.00 );";
-            stmt.executeUpdate(sql);
+            
+            String sql = "INSERT INTO " + details;
+            BufferedReader br = new BufferedReader(new FileReader(CSVpath));
+            String line;
+            while((line = br.readLine()) != null)
+            {
+                String[] values = line.split(",");
+                stmt.executeUpdate(sql);
+            }
 
-            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (2, 'Allen', 25, 'Texas', 15000.00 );";
-            stmt.executeUpdate(sql);
-
-            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (3, 'Teddy', 23, 'Norway', 20000.00 );";
-            stmt.executeUpdate(sql);
-
-            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 );";
+            
             stmt.executeUpdate(sql);
 
             stmt.close();
