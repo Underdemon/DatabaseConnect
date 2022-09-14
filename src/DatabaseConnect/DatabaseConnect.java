@@ -7,26 +7,31 @@ package DatabaseConnect;
 
 /**
  *
- * @author water
+ * @author rayan
  */
 //import java.sql.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import static javax.management.Query.value;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.nio.file.Files;
+import java.sql.PreparedStatement;
+import java.sql.ResultSetMetaData;
+import java.util.Arrays;
 
 /**
  *
@@ -48,15 +53,31 @@ public class DatabaseConnect
         conn.createTable(".\\src\\DDLs\\movieFormatDDL.txt");
         conn.createTable(".\\src\\DDLs\\overdueDDL.txt");
         conn.createTable(".\\src\\DDLs\\rentalDDL.txt");
+        
+        
+        conn.insert("Address", ".\\src\\CSVs\\Address.csv");
+        conn.insert("Customer", ".\\src\\CSVs\\Customer.csv");
+        conn.insert("Download", ".\\src\\CSVs\\Download.csv");
+        conn.insert("Movie", ".\\src\\CSVs\\Movie.csv");
+        conn.insert("MovieFormat", ".\\src\\CSVs\\MovieFormat.csv");
+        conn.insert("Overdue", ".\\src\\CSVs\\Overdue.csv");
+        conn.insert("Rental", ".\\src\\CSVs\\Rental.csv");
         */
         
-        conn.insert();
         //conn.select();
         //conn.update();
+        String[] columnNames = selectColumnNames("Customer");
+        for(String names : columnNames)
+        {
+            System.out.print(names + ", ");
+        }
+        
         if (conn != null)
         {
             conn.close();            
         }            
+        
+        
     }
 
     public DatabaseConnect()
@@ -112,26 +133,29 @@ public class DatabaseConnect
         }
         return stmt != null;
     }
-
-    public boolean insert(String details, String CSVpath)
+    
+    public boolean insert(String tableName)
     {
         boolean bInsert = false;
         Statement stmt = null;
-
+        
         try
         {
             stmt = conn.createStatement();
-            
-            String sql = "INSERT INTO " + details;
-            BufferedReader br = new BufferedReader(new FileReader(CSVpath));
-            String line;
-            while((line = br.readLine()) != null)
-            {
-                String[] values = line.split(",");
-                stmt.executeUpdate(sql);
-            }
+            String sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+                    + "VALUES (1, 'Paul', 32, 'California', 20000.00 );";
+            stmt.executeUpdate(sql);
 
-            
+            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+                    + "VALUES (2, 'Allen', 25, 'Texas', 15000.00 );";
+            stmt.executeUpdate(sql);
+
+            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+                    + "VALUES (3, 'Teddy', 23, 'Norway', 20000.00 );";
+            stmt.executeUpdate(sql);
+
+            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
+                    + "VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 );";
             stmt.executeUpdate(sql);
 
             stmt.close();
@@ -146,43 +170,129 @@ public class DatabaseConnect
 
         return bInsert;
     }
-
-    public boolean select()
+    
+    public boolean insert(String csvName, String CSVpath)
     {
-        boolean bSelect = false;
+        boolean bInsert = false;
         Statement stmt = null;
-        ResultSet rs = null;
 
         try
         {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM COMPANY;");
-
-            while (rs.next())
+            long lineCount = 0;
+            try (Stream<String> stream = Files.lines(Paths.get(CSVpath), StandardCharsets.UTF_8)) 
             {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                int age = rs.getInt("age");
-                String address = rs.getString("address");
-                float salary = rs.getFloat("salary");
+                lineCount = stream.count();
+            }
+            
+            String sql = "INSERT INTO " + csvName;
+            BufferedReader br = new BufferedReader(new FileReader(CSVpath));
+            String line;
+            int lineNum = 0;
+            String[] headers = null;
+            String[][] values = new String[(int)lineCount - 1][];
+            
+            while((line = br.readLine()) != null)
+            {
+                if(lineNum == 0)
+                {
+                    headers = line.split(",");
+                }
+                else
+                {
+                    values[lineNum - 1] = line.split(",");
+                }
+                
+                lineNum++;
+            }
+                        
+            for(int i = 0; i < headers.length; i++)
+            {
+                if(i == 0)
+                {
+                    sql += " (" + headers[i] + ",";
+                }
+                else if(i == headers.length - 1)
+                {
+                    sql += headers[i] + ") VALUES (";
+                }
+                else
+                {
+                    sql += headers[i] + ",";
+                }
+            }
+                        
+            String sqlTemp = "";
+            for(int j = 0; j < lineCount - 1; j++)
+            {
+                for(int i = 0; i < values[j].length; i++)
+                {
+                    if(isNumeric(values[j][i]))
+                    {
+                        if(i == values[j].length - 1)
+                        {
+                            sqlTemp += values[j][i] + ")";
+                        }
+                        else
+                        {
+                            sqlTemp += values[j][i] + ",";
+                        }
+                    }
+                    else
+                    {
+                        if(i == values[j].length - 1)
+                        {
+                            sqlTemp += "'" + values[j][i] + "')";
+                        }
+                        else
+                        {
+                            sqlTemp += "'" + values[j][i] + "',";
+                        }
+                    }
+                }
+                
+                System.out.println(sql + sqlTemp);
+                stmt.executeUpdate(sql + sqlTemp);
+                sqlTemp = "";
+            }
+            
+            stmt.close();
+            conn.commit();
+            bInsert = true;
+        }
+        catch (Exception e)
+        {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
 
-                System.out.println("ID = " + id);
-                System.out.println("NAME = " + name);
-                System.out.println("AGE = " + age);
-                System.out.println("ADDRESS = " + address);
-                System.out.println("SALARY = " + salary);
-                System.out.println();
+        return bInsert;
+    }
+
+    public static String[] selectColumnNames(String tableName)
+    {
+        Statement stmt = null;
+        ResultSet rs;
+        String[] name = null;
+        
+        try
+        {
+            rs = stmt.executeQuery("SELECT * FROM " + tableName);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+            for (int i = 1; i <= columnCount; i++ )
+            {
+                name[i] = rsmd.getColumnName(i);
             }
             
             rs.close();
             stmt.close();   
-            bSelect = true;
-        } 
+        }
         catch (SQLException e)
         {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
-        return bSelect;
+        
+        return name;
     }
     
     public boolean update()
@@ -204,5 +314,20 @@ public class DatabaseConnect
         }
 
         return bUpdate;
+    }
+    
+    public boolean isNumeric(String str)
+    {
+        if(str.equals(null))
+            return false;
+        
+        final Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+        /*
+        -?          determines if number starts with minus
+        \d+         matches one or more digits
+        (\.\d+)?    matches for decimal point and digits following
+        */
+        
+        return pattern.matcher(str).matches();
     }
 }

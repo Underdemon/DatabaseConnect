@@ -1,0 +1,6 @@
+CustomerID,CustomerName,AddressID,PhoneNumber,DateOfBirth
+1,John Smith,1,1555354354,30/03/2005
+2,Mary Jones,2,1555643333,23/04/1975
+3,John Doe,3,1555653535,23/08/1948
+4,Mary Jane,2,208696907,02/06/1981
+5,Becky Jane,1,207898949,05/09/2011
