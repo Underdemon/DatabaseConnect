@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
 import java.util.Arrays;
+import java.util.Scanner;
 
 /**
  *
@@ -39,7 +40,7 @@ import java.util.Arrays;
  */
 public class DatabaseConnect
 {
-    private Connection conn = null;
+    private static Connection conn = null;
 
     public static void main(String args[])
     {
@@ -64,13 +65,17 @@ public class DatabaseConnect
         conn.insert("Rental", ".\\src\\CSVs\\Rental.csv");
         */
         
-        //conn.select();
-        //conn.update();
+        /*
         String[] columnNames = selectColumnNames("Customer");
         for(String names : columnNames)
         {
             System.out.print(names + ", ");
         }
+        */
+        //conn.insert("Customer");
+        //conn.update("Customer");
+        //conn.delete("Customer");
+        conn.displayOverdueFees(".\\src\\Queries\\overdue_report.txt");
         
         if (conn != null)
         {
@@ -138,30 +143,56 @@ public class DatabaseConnect
     {
         boolean bInsert = false;
         Statement stmt = null;
+        ResultSet rs = null;
         
         try
         {
             stmt = conn.createStatement();
-            String sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (1, 'Paul', 32, 'California', 20000.00 );";
-            stmt.executeUpdate(sql);
-
-            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (2, 'Allen', 25, 'Texas', 15000.00 );";
-            stmt.executeUpdate(sql);
-
-            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (3, 'Teddy', 23, 'Norway', 20000.00 );";
-            stmt.executeUpdate(sql);
-
-            sql = "INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) "
-                    + "VALUES (4, 'Mark', 25, 'Rich-Mond ', 65000.00 );";
-            stmt.executeUpdate(sql);
-
+            
+            System.out.println("The fields in the selected table are:");
+            String[] columnNames = selectColumnNames(tableName);
+            String columnNamesConcat = "";
+            for(int i = 0; i < columnNames.length; i++)
+            {
+                System.out.print("\n|\n=---" + columnNames[i]);
+                if(i == (columnNames.length - 1))
+                    columnNamesConcat += columnNames[i];
+                else
+                    columnNamesConcat += columnNames[i] + ",";
+            }
+            
+            rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName);
+            int rowCount = rs.getInt(1);
+            
+            System.out.println("\n");
+            Scanner scnr = new Scanner(System.in);
+            String sql = "INSERT INTO " + tableName + "(" + columnNamesConcat + ") VALUES (" + (rowCount + 1) + ",";
+            //(rowCount + 1) is the new "column"ID
+            //this assumes we aren't adding into what should be static .db (like MovieFormat)
+            String tmp = null;
+            for(int i = 1; i < columnNames.length; i++)
+            {
+                System.out.println("Please enter the value you want to insert into " + columnNames[i]);
+                tmp = scnr.nextLine();
+                if(i == (columnNames.length - 1))
+                {
+                    if(isNumeric(tmp))
+                        sql += tmp + ")";
+                    else
+                        sql += "'" + tmp + "')";
+                }
+                else
+                {
+                    if(isNumeric(tmp))
+                        sql += tmp + ",";
+                    else
+                        sql += "'" + tmp + "',";
+                }
+            }
+            stmt.execute(sql);
             stmt.close();
             conn.commit();
             bInsert = true;
-
         }
         catch (Exception e)
         {
@@ -267,21 +298,136 @@ public class DatabaseConnect
 
         return bInsert;
     }
-
-    public static String[] selectColumnNames(String tableName)
+    
+    public boolean update(String tableName)
     {
+        boolean bUpdate = false;
         Statement stmt = null;
-        ResultSet rs;
-        String[] name = null;
+        ResultSet rs = null;
         
         try
         {
-            rs = stmt.executeQuery("SELECT * FROM " + tableName);
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-            for (int i = 1; i <= columnCount; i++ )
+            stmt = conn.createStatement();
+            
+            String[] columnNames = selectColumnNames(tableName);
+            
+            String sql = "";
+            Scanner scnr = new Scanner(System.in);
+            System.out.println("\nPlease input the " + columnNames[0] + " that you want to change: ");
+            int id = scnr.nextInt();
+            scnr.nextLine();
+            System.out.println("Please input the EXACT name of the field above you want to modify: ");
+            String field = scnr.nextLine();
+            System.out.println("Please enter what you would like to change " + field + " to: ");
+            String choice = scnr.nextLine();
+            if(!isNumeric(choice))
+                sql = "UPDATE " + tableName + " set " + field + " = '" + choice + "' WHERE " + columnNames[0] + "=" + id;
+            else
+                sql = "UPDATE " + tableName + " set " + field + " = " + choice + " WHERE " + columnNames[0] + "=" + id;
+            System.out.println(sql);
+            stmt.execute(sql);
+            stmt.close();
+            conn.commit();
+            bUpdate = true;
+        }
+        catch (Exception e)
+        {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+        return bUpdate;
+    }
+    
+    public boolean delete(String tableName)
+    {
+        boolean bDelete = false;
+        Statement stmt = null;
+        ResultSet rs = null;
+        
+        try
+        {
+            stmt = conn.createStatement();
+            
+            System.out.println("The fields in the selected table are:");
+            String[] columnNames = selectColumnNames(tableName);
+            for(int i = 0; i < columnNames.length; i++)
             {
-                name[i] = rsmd.getColumnName(i);
+                System.out.print("\n|\n=---" + columnNames[i]);
+            }
+            
+            String sql = "";
+            Scanner scnr = new Scanner(System.in);
+            System.out.println("\nPlease input the " + columnNames[0] + " that you want to remove the data for: ");
+            int id = scnr.nextInt();
+            sql = "DELETE FROM " + tableName + " WHERE " + columnNames[0] + "=" + id;
+            System.out.println(sql);
+            stmt.execute(sql);
+            stmt.close();
+            conn.commit();
+            bDelete = true;
+        }
+        catch (Exception e)
+        {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+        return bDelete;
+    }
+    
+    public boolean displayOverdueFees(String queriesPath)
+    {
+        boolean bDisplay = false;
+        Statement stmt = null;
+        ResultSet rs = null;
+        String tableName = "Customer";
+        String sql = "";
+        
+        try
+        {
+            stmt = conn.createStatement();
+            
+            System.out.println("The fields in the selected table are:");
+            String[] columnNames = selectColumnNames(tableName);
+            
+            Path ddlCreate = Paths.get(queriesPath);
+            Stream<String> lines = Files.lines(ddlCreate);
+            String data = lines.collect(Collectors.joining("\n"));
+            lines.close();
+            
+            Scanner scnr = new Scanner(System.in);
+            System.out.println("\nPlease input the " + columnNames[0] + " that you want to find the overdue fees for: ");
+            int id = scnr.nextInt();
+            
+            sql = data + " AND " + columnNames[0] + "=" + id;
+            System.out.println(sql);
+            rs = stmt.executeQuery(sql);
+            rs.close();
+            stmt.close();
+            conn.commit();
+            bDisplay = true;
+        }
+        catch (Exception e)
+        {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+        return bDisplay;
+    }
+    
+    public static String[] selectColumnNames(String tableName)
+    {
+        Statement stmt = null;
+        ResultSet rs = null;
+        String[] columnName = null;
+        
+        try
+        {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM " + tableName + ";");
+            ResultSetMetaData metaData = rs.getMetaData();
+            int count = metaData.getColumnCount();
+            columnName = new String[count];
+
+            for (int i = 1; i <= count; i++)
+            {
+               columnName[i-1] = metaData.getColumnLabel(i);
             }
             
             rs.close();
@@ -292,28 +438,7 @@ public class DatabaseConnect
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
         
-        return name;
-    }
-    
-    public boolean update()
-    {
-        boolean bUpdate = false;
-        Statement stmt = null;
-
-        try
-        {
-            stmt = conn.createStatement();
-            String sql = "UPDATE COMPANY set SALARY = 25000.00 where ID=1;";
-            stmt.executeUpdate(sql);
-            stmt.close();
-            conn.commit();
-            bUpdate = true;
-        } catch (Exception e)
-        {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
-        }
-
-        return bUpdate;
+        return columnName;
     }
     
     public boolean isNumeric(String str)

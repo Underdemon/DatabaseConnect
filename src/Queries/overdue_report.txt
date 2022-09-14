@@ -1,0 +1,19 @@
+SELECT Download.CustomerID,
+Download.DownloadID,
+Movie.Age,
+CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration AS OverdueLength,
+Movie.Price,
+CASE
+    WHEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) <= 0
+        THEN '0'
+    WHEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) <= 7
+        THEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) * (CAST((Movie.Price * Overdue.OverdueLessWeek) AS DECIMAL(5, 2)))
+    WHEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) >= 7
+        THEN (CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) - Overdue.Duration) * (CAST((Movie.Price * Overdue.OverdueGreaterWeek) AS DECIMAL(5, 2)))
+    ELSE 'error'
+END AS "OverdueFees"
+FROM Download
+INNER JOIN Rental on Download.DownloadID = Rental.DownloadID
+INNER JOIN Movie on Download.MovieID = Movie.MovieID
+INNER JOIN Overdue on Movie.Age = Overdue.Age
+WHERE CAST((JULIANDAY(Rental.DateOfReturn) - JULIANDAY(Download.DateOfDownload)) AS INTEGER) > 0

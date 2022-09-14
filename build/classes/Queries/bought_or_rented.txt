@@ -1,0 +1,6 @@
+SELECT
+viewBought.c1 AS total_bought, viewRented.c2 AS total_rented,
+viewBought.c1 + viewRented.c2 AS total,
+CAST(((1.0 * viewBought.c1)/((1.0 * viewBought.c1) + (1.0 * viewRented.c2))) * 100 AS DECIMAL (5,2)) AS percent_bought,
+CAST(((1.0 * viewRented.c2)/((1.0 * viewBought.c1) + (1.0 * viewRented.c2))) * 100 AS DECIMAL (5,2)) AS percent_rented
+FROM viewBought, viewRented
