@@ -31,7 +31,9 @@ import java.util.regex.Pattern;
 import java.nio.file.Files;
 import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -399,6 +401,10 @@ public class DatabaseConnect
             sql = data + " AND " + columnNames[0] + "=" + id;
             System.out.println(sql);
             rs = stmt.executeQuery(sql);
+            
+            while(rs.next())
+                System.out.println(rs.getString(2));
+                
             rs.close();
             stmt.close();
             conn.commit();
