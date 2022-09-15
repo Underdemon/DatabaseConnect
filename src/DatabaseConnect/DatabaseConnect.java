@@ -48,43 +48,101 @@ public class DatabaseConnect
     {
         DatabaseConnect conn = new DatabaseConnect();
         
-        /*
-        conn.createTable(".\\src\\DDLs\\addressDDL.txt");
-        conn.createTable(".\\src\\DDLs\\customerDDL.txt");
-        conn.createTable(".\\src\\DDLs\\downloadDDL.txt");
-        conn.createTable(".\\src\\DDLs\\movieDDL.txt");
-        conn.createTable(".\\src\\DDLs\\movieFormatDDL.txt");
-        conn.createTable(".\\src\\DDLs\\overdueDDL.txt");
-        conn.createTable(".\\src\\DDLs\\rentalDDL.txt");
-        
-        
-        conn.insert("Address", ".\\src\\CSVs\\Address.csv");
-        conn.insert("Customer", ".\\src\\CSVs\\Customer.csv");
-        conn.insert("Download", ".\\src\\CSVs\\Download.csv");
-        conn.insert("Movie", ".\\src\\CSVs\\Movie.csv");
-        conn.insert("MovieFormat", ".\\src\\CSVs\\MovieFormat.csv");
-        conn.insert("Overdue", ".\\src\\CSVs\\Overdue.csv");
-        conn.insert("Rental", ".\\src\\CSVs\\Rental.csv");
-        */
-        
-        /*
-        String[] columnNames = selectColumnNames("Customer");
-        for(String names : columnNames)
+        Scanner scnr = new Scanner(System.in);
+        int mainChoice = 0;
+        String input = null;
+        String temp = null;
+        while(true)
         {
-            System.out.print(names + ", ");
+            System.out.println("Please input what you would like to do (required inputs in brackets)");
+            System.out.println("\n\t1 - create table with DDL (path to DDL)\n\t2 - insert data from CSV (table name, path to CSV)\n\t3 - insert data via user input (table name)\n\t4 - update a field in the table(table name)\n\t5 - delete a row/customer (table name)\n\t6 - display overdue fees (path to query)\n\t7 - auto input (runs through a test case)\n\t8 - exit the program");
+            if(mainChoice < 1 || mainChoice > 7)
+            {
+                mainChoice = scnr.nextInt();
+                scnr.nextLine();
+            }
+            else
+            {
+                System.out.println("Input failed");
+                continue;
+            }
+            
+            switch(mainChoice)
+            {
+                case 1:
+                    System.out.println("Please input the path to the DDL (to create the table)\n\tuse the example notation .\\src\\DDLs\\customerDDL.txt");
+                    input = scnr.nextLine();
+                    conn.createTable(input);
+                    break;
+                case 2:
+                    System.out.println("Please input the table name (to insert the data from a csv");
+                    input = scnr.nextLine();
+                    System.out.println("Please input the path to the CSV (to insert the CSV data into the table)\n\tuse the example notation .\\src\\CSVs\\Customer.csv");
+                    temp = scnr.nextLine();
+                    conn.insert(input, temp);
+                    break;
+                case 3:
+                    System.out.println("Please input the table name you want to manually insert data into");
+                    input = scnr.nextLine();
+                    conn.insert(input);
+                    break;
+                case 4:
+                    System.out.println("Please input the table name you want to manually update data for");
+                    input = scnr.nextLine();
+                    conn.update(input);
+                    break;
+                case 5:
+                    System.out.println("Please input the table name you want to delete a row/customer for");
+                    input = scnr.nextLine();
+                    conn.delete(input);
+                    break;
+                case 6:
+                    System.out.println("Please input the path to the query file\n\tuse the example notation .\\src\\Queries\\overdue_report.txt");
+                    input = scnr.nextLine();
+                    conn.displayOverdueFees(input);
+                    break;
+                case 7:
+                    conn.createTable(".\\src\\DDLs\\addressDDL.txt");
+                    conn.createTable(".\\src\\DDLs\\customerDDL.txt");
+                    conn.createTable(".\\src\\DDLs\\downloadDDL.txt");
+                    conn.createTable(".\\src\\DDLs\\movieDDL.txt");
+                    conn.createTable(".\\src\\DDLs\\movieFormatDDL.txt");
+                    conn.createTable(".\\src\\DDLs\\overdueDDL.txt");
+                    conn.createTable(".\\src\\DDLs\\rentalDDL.txt");
+
+
+                    conn.insert("Address", ".\\src\\CSVs\\Address.csv");
+                    conn.insert("Customer", ".\\src\\CSVs\\Customer.csv");
+                    conn.insert("Download", ".\\src\\CSVs\\Download.csv");
+                    conn.insert("Movie", ".\\src\\CSVs\\Movie.csv");
+                    conn.insert("MovieFormat", ".\\src\\CSVs\\MovieFormat.csv");
+                    conn.insert("Overdue", ".\\src\\CSVs\\Overdue.csv");
+                    conn.insert("Rental", ".\\src\\CSVs\\Rental.csv");
+
+
+
+                    String[] columnNames = selectColumnNames("Customer");
+                    for(String names : columnNames)
+                    {
+                        System.out.print(names + ", ");
+                    }
+
+
+                    conn.insert("Customer");
+                    conn.update("Customer");
+                    conn.delete("Customer");
+                    conn.displayOverdueFees(".\\src\\Queries\\overdue_report.txt");
+                    break;
+                case 8:
+                    if (conn != null)
+                    {
+                        conn.close();            
+                    }
+                    System.exit(0);
+                default:
+                    continue;
+            }
         }
-        */
-        //conn.insert("Customer");
-        //conn.update("Customer");
-        //conn.delete("Customer");
-        conn.displayOverdueFees(".\\src\\Queries\\overdue_report.txt");
-        
-        if (conn != null)
-        {
-            conn.close();            
-        }            
-        
-        
     }
 
     public DatabaseConnect()
@@ -222,7 +280,7 @@ public class DatabaseConnect
             BufferedReader br = new BufferedReader(new FileReader(CSVpath));
             String line;
             int lineNum = 0;
-            String[] headers = null;
+            String[] headers = null;    //can replace with function coded
             String[][] values = new String[(int)lineCount - 1][];
             
             while((line = br.readLine()) != null)
@@ -398,12 +456,9 @@ public class DatabaseConnect
             System.out.println("\nPlease input the " + columnNames[0] + " that you want to find the overdue fees for: ");
             int id = scnr.nextInt();
             
-            sql = data + " AND " + columnNames[0] + "=" + id;
+            sql = "CREATE VIEW overdueFees AS" + data + " AND " + columnNames[0] + "=" + id;
             System.out.println(sql);
             rs = stmt.executeQuery(sql);
-            
-            while(rs.next())
-                System.out.println(rs.getString(2));
                 
             rs.close();
             stmt.close();
@@ -433,7 +488,7 @@ public class DatabaseConnect
 
             for (int i = 1; i <= count; i++)
             {
-               columnName[i-1] = metaData.getColumnLabel(i);
+               columnName[i - 1] = metaData.getColumnLabel(i);
             }
             
             rs.close();
