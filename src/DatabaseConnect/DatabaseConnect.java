@@ -10,10 +10,13 @@ package DatabaseConnect;
  * @author rayan
  */
 //import java.sql.*;
+import dataStructures.hashmap.hashEntry;
+import dataStructures.hashmap.hashMap;
+import java.util.Iterator;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -23,17 +26,11 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.file.Files;
-import java.sql.PreparedStatement;
 import java.sql.ResultSetMetaData;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -43,7 +40,7 @@ import java.util.Scanner;
 public class DatabaseConnect
 {
     private static Connection conn = null;
-
+    
     public static void main(String args[])
     {
         DatabaseConnect conn = new DatabaseConnect();
@@ -52,6 +49,9 @@ public class DatabaseConnect
         int mainChoice = 0;
         String input = null;
         String temp = null;
+        
+        hashMapTest();
+        
         while(true)
         {
             System.out.println("Please input what you would like to do (required inputs in brackets)");
@@ -515,5 +515,72 @@ public class DatabaseConnect
         */
         
         return pattern.matcher(str).matches();
+    }
+    
+    public static void hashMapTest()
+    {
+        hashMap<String, String> studentMap = new hashMap<>();
+        hashMap<String, String> studentNewMap;
+        
+        studentMap     =   studentMap.add("vikash", "Singh");
+
+        studentNewMap  =   studentMap.add("Vickey", "Singh");
+
+        studentNewMap  =   studentNewMap.add("Xyz","singh");
+
+        //replacing the existing key value in studentNewMap
+        studentNewMap  =   studentNewMap.add("vikash","kumar");
+
+        Iterator studentMapIterator = studentMap.iterator();
+
+        Iterator studentNewMapIterator = studentNewMap.iterator();
+
+        System.out.println("printing all value of the studentMap\n");
+
+        while(studentMapIterator.hasNext())
+        {
+            //remember type casting
+            hashEntry<String,String> hashTemp = (hashEntry)studentMapIterator.next();
+            System.out.println(hashTemp.getKey() + " " + hashTemp.getValue());
+
+        }
+
+        System.out.println("\nprinting all value of the studentNewMap\n");
+
+        while(studentNewMapIterator.hasNext())
+        {
+            //remember type casting
+            hashEntry<String,String> hashTemp = (hashEntry)studentNewMapIterator.next();
+            System.out.println(hashTemp.getKey() + " " + hashTemp.getValue());
+
+        }
+
+        //removing the entry in studentNewMap
+        studentNewMap = studentNewMap.remove("vikash");
+
+        studentNewMapIterator = studentNewMap.iterator();
+
+        System.out.println("\nprinting all value of the studentNewMap after removing\n");
+
+
+        while(studentNewMapIterator.hasNext())
+        {
+            //remember type casting
+            hashEntry<String,String> hashTemp = (hashEntry)studentNewMapIterator.next();
+            System.out.println(hashTemp.getKey() + " " + hashTemp.getValue());
+
+        }
+
+        studentMapIterator = studentMap.iterator();
+
+        System.out.println("printing all value of the studentMap\n");
+
+        while(studentMapIterator.hasNext())
+        {
+            //remember type casting
+            hashEntry<String,String> hashTemp = (hashEntry)studentMapIterator.next();
+            System.out.println(hashTemp.getKey() + " " + hashTemp.getValue());
+
+        }
     }
 }
