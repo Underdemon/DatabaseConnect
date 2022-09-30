@@ -10,8 +10,8 @@ package DatabaseConnect;
  * @author rayan
  */
 //import java.sql.*;
-import dataStructures.hashmap.hashEntry;
-import dataStructures.hashmap.hashMap;
+import hashmap.hashEntry;
+import hashmap.hashMap;
 import java.util.Iterator;
 
 import java.io.BufferedReader;

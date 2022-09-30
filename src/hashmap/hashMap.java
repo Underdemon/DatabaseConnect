@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dataStructures.hashmap;
+package hashmap;
 
+import dataStructures.hashmap.Map;
 import java.util.ArrayList;
 import java.util.Iterator;
 /**
@@ -76,7 +77,7 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
     }
     
     @Override
-    public hashMap<K, V> add(K key, V value)
+    public void add(K key, V value)
     {
         hashEntry<K, V> [] tempEntries = new hashEntry[this.size() + 1];    // makes array of current size + 1 (size after kv pair is added)
         int currIndex = 0;
@@ -86,15 +87,13 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         {
             if(entry != null)
             {
-                if(entry.getKey().compareTo(key) != 0)
-                    tempEntries[currIndex++] = new hashEntry<>(entry);
+                
             }
         }
-        return new hashMap<>(tempEntries);
     }
 
     @Override
-    public hashMap<K, V> remove(K key)  // renmoves hashEntry with key value matching key arg
+    public void remove(K key)  // renmoves hashEntry with key value matching key arg
     {
         hashEntry<K, V> [] tempEntries = new hashEntry[this.size() - 1];    // makes an array of size -1 (size after hashEntry is deleted)
         int currIndex = 0;
@@ -103,11 +102,9 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         {
             if(entry.getKey().compareTo(key) != 0)
             {
-                tempEntries[currIndex++] = new hashEntry<>(entry);
+                
             }
         }
-        
-        return new hashMap<>(tempEntries);
     }
 
     @Override
@@ -192,6 +189,23 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         }
         
         return root;
+    }
+    
+    public void removeTree(hashEntry<K, V> root, hashEntry<K, V> data)
+    {
+        if(root == null)
+        {
+            
+        }
+        
+        if(data.compareTo(root) < 0)
+        {
+            root.setLeft(insertTree(root.getLeft(), data));
+        }
+        else
+        {
+            root.setRight(insertTree(root.getRight(), data));
+        }
     }
     
     
