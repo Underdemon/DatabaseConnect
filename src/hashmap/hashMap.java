@@ -4,7 +4,7 @@
  */
 package hashmap;
 
-import dataStructures.hashmap.Map;
+import BST.BST;
 import java.util.ArrayList;
 import java.util.Iterator;
 /**
