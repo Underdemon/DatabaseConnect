@@ -197,7 +197,7 @@ public class BST<T extends Comparable<T>>
             printCurrLevel(root, i);
     }
     
-    private int height(DL_Node node)
+    public int height(DL_Node node)
     {
         if(node == null)
             return 0;
@@ -206,10 +206,7 @@ public class BST<T extends Comparable<T>>
             int lheight = height(node.prev);
             int rheight = height(node.next);
             
-            if(lheight > rheight)
-                return lheight + 1;
-            else
-                return rheight + 1;
+            return Math.max(lheight, rheight) + 1;
         }
     }
     

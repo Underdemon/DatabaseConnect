@@ -38,7 +38,7 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
     /*  array stores the root node for the binary tree  */
     private final hashEntry<K, V> [] table = new hashEntry[capacity];
     
-    private final ArrayList<hashEntry<K, V>> kvEntries = new ArrayList<>(); //kv pairs stored sequentially
+    
     
     
     /*
@@ -58,15 +58,7 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         {
             if(entry != null)
             {
-                K key   = entry.getKey();
-                V value = entry.getValue();
                 
-                hashEntry<K, V> rootNode = table[hash(key)];
-                hashEntry<K, V> dataNode = new hashEntry<>(key, value);
-                
-                rootNode = insertTree(rootNode, dataNode);
-                table[hash(key)] = rootNode;
-                kvEntries.add(entry);
             }
         }
     }
@@ -79,75 +71,31 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
     @Override
     public void add(K key, V value)
     {
-        hashEntry<K, V> [] tempEntries = new hashEntry[this.size() + 1];    // makes array of current size + 1 (size after kv pair is added)
-        int currIndex = 0;
         
-        tempEntries[currIndex++] = new hashEntry<>(key, value);
-        for(hashEntry<K, V> entry : kvEntries)
-        {
-            if(entry != null)
-            {
-                
-            }
-        }
     }
 
     @Override
     public void remove(K key)  // renmoves hashEntry with key value matching key arg
     {
-        hashEntry<K, V> [] tempEntries = new hashEntry[this.size() - 1];    // makes an array of size -1 (size after hashEntry is deleted)
-        int currIndex = 0;
         
-        for(hashEntry<K, V> entry : kvEntries)
-        {
-            if(entry.getKey().compareTo(key) != 0)
-            {
-                
-            }
-        }
     }
 
     @Override
     public V get(K key)
     {
-        hashEntry<K, V> rootNode = table[hash(key)];    // finds index of binary tree root node
-        hashEntry<K, V> node = searchTree(rootNode, key);   // search tree and return the matching node if found
-        if(node == null)
-        {
-            throw new IllegalArgumentException();
-        }
-        else
-        {
-            return node.getValue();
-        }
+        
     }
 
     @Override
     public boolean containsKey(K key)
     {
-        hashEntry<K, V> rootNode = table[hash(key)];    // finds root bucket for binary tree based on the index of the hashed key
-        if(rootNode == null)
-        {
-            return false;
-        }
-        else
-        {
-            hashEntry<K, V> isKeyPresent = searchTree(rootNode, key);   // searches for key presence using searchTree()
-            if(isKeyPresent == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
+        
     }
 
     @Override
     public int size()
     {
-        return kvEntries.size();
+        
     }
     
     /*
@@ -157,63 +105,14 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
     
     public hashEntry<K, V> searchTree(hashEntry<K, V> root, K key)
     {
-        if((root == null) || (root.getKey().compareTo(key) == 0))
-        {
-            return root;
-        }
         
-        if(key.compareTo(root.getKey()) < 0)
-        {
-            return searchTree(root.getLeft(), key);
-        }
-        else
-        {
-            return searchTree(root.getRight(), key);
-        }
     }
+      
     
-    public hashEntry<K, V> insertTree(hashEntry<K, V> root, hashEntry<K, V> data)
-    {
-        if(root == null)
-        {
-            return data;
-        }
-        
-        if(data.compareTo(root) < 0)
-        {
-            root.setLeft(insertTree(root.getLeft(), data));
-        }
-        else
-        {
-            root.setRight(insertTree(root.getRight(), data));
-        }
-        
-        return root;
-    }
-    
-    public void removeTree(hashEntry<K, V> root, hashEntry<K, V> data)
-    {
-        if(root == null)
-        {
-            
-        }
-        
-        if(data.compareTo(root) < 0)
-        {
-            root.setLeft(insertTree(root.getLeft(), data));
-        }
-        else
-        {
-            root.setRight(insertTree(root.getRight(), data));
-        }
-    }
-    
-    
-    
-    public mapIterator iterator()
-    {
-        return new mapIterator();
-    }
+//    public mapIterator iterator()
+//    {
+//        return new mapIterator();
+//    }
     
     /*
         to use iterator
@@ -228,35 +127,35 @@ public class hashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         }
     */
     
-    public class mapIterator implements Iterator<hashEntry<K, V>>
-    {
-        int curr;
-        
-        public mapIterator()
-        {
-            curr = 0;
-        }
-        
-        public boolean hasNext()
-        {
-            return curr < kvEntries.size(); // if the current element the iterable is on is less than the arraylist's size, then there is a next element to iterate to
-        }
-        
-        /*
-            returns the next element in the hashmap
-            if there are no more elements in the hashmap, an error is thrown
-        */
-        public hashEntry<K, V> next()
-        {
-            if(curr >= kvEntries.size())
-            {
-                throw new IllegalArgumentException();
-            }
-            
-            ++curr;
-            return new hashEntry<>(kvEntries.get(curr - 1));
-        }
-    }
+//    public class mapIterator implements Iterator<hashEntry<K, V>>
+//    {
+//        int curr;
+//        
+//        public mapIterator()
+//        {
+//            curr = 0;
+//        }
+//        
+//        public boolean hasNext()
+//        {
+//            return curr < kvEntries.size(); // if the current element the iterable is on is less than the arraylist's size, then there is a next element to iterate to
+//        }
+//        
+//        /*
+//            returns the next element in the hashmap
+//            if there are no more elements in the hashmap, an error is thrown
+//        */
+//        public hashEntry<K, V> next()
+//        {
+//            if(curr >= kvEntries.size())
+//            {
+//                throw new IllegalArgumentException();
+//            }
+//            
+//            ++curr;
+//            return new hashEntry<>(kvEntries.get(curr - 1));
+//        }
+//    }
 }
 
 
